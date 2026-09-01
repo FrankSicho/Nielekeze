@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#0b5a5b" />
+    <title>Setup Admin | Daladala Dar</title>
+    <link rel="stylesheet" href="/Nielekeze/frontend/css/admin.css" />
+  </head>
+  <body>
+    <header class="admin-topbar">
+      <a class="brand" href="/Nielekeze/admin">Daladala Dar <span>Setup</span></a>
+    </header>
+
+    <main class="admin-shell">
+      <section class="panel login-panel" aria-labelledby="setup-title">
+        <p class="eyebrow">One-time administrator setup</p>
+        <h1 id="setup-title">Create the first admin</h1>
+        <p class="muted">Use the shared setup secret configured in the environment to promote an email to administrator.</p>
+        <form id="setup-form" class="stack-form">
+          <label>Email<input id="setup-email" type="email" required autocomplete="username" /></label>
+          <label>Password<input id="setup-password" type="password" required autocomplete="new-password" /></label>
+          <label>Setup secret<input id="setup-secret" type="password" required /></label>
+          <button class="primary-button" type="submit">Create admin</button>
+        </form>
+        <p id="setup-message" class="message" role="alert"></p>
+      </section>
+    </main>
+
+    <script>
+      const form = document.querySelector("#setup-form");
+      const message = document.querySelector("#setup-message");
+      form.addEventListener("submit", async (event) => {
+        event.preventDefault();
+        message.textContent = "Creating administrator...";
+        try {
+          const response = await fetch("/Nielekeze/api/v1/auth/register-admin", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              email: document.querySelector("#setup-email").value,
+              password: document.querySelector("#setup-password").value,
+              setup_secret: document.querySelector("#setup-secret").value,
+            }),
+          });
+          const body = await response.json().catch(() => null);
+          if (!response.ok) throw new Error(body?.error || body?.detail || "Setup failed");
+          message.textContent = `Admin account created for ${body.user.email}.`;
+          form.reset();
+        } catch (error) {
+          message.textContent = error.message;
+          message.classList.add("error");
+        }
+      });
+    </script>
+  </body>
+</html>
