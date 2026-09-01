@@ -28,8 +28,8 @@ const api = async (path, options = {}) => {
   if (token) headers.Authorization = `Bearer ${token}`;
   const resolvedPath = path.startsWith("/") ? `${apiBase}${path}` : path;
   const response = await fetch(resolvedPath, { ...options, headers });
-  const body = response.status === 204 ? null : await response.json();
-  if (!response.ok) throw new Error(body?.error || body?.detail || "Request failed");
+  const body = response.status === 204 ? null : await response.json().catch(() => null);
+  if (!response.ok) throw new Error(body?.error || body?.detail || `Request failed (HTTP ${response.status})`);
   return body;
 };
 

@@ -4,12 +4,32 @@
  * Handles token verification for protected endpoints
  */
 
+function request_headers() {
+    if (function_exists('getallheaders')) {
+        return getallheaders();
+    }
+
+    $headers = [];
+    foreach ($_SERVER as $key => $value) {
+        if (strpos($key, 'HTTP_') === 0) {
+            $name = str_replace(' ', '-', ucwords(strtolower(str_replace('_', ' ', substr($key, 5)))));
+            $headers[$name] = $value;
+        }
+    }
+
+    if (isset($_SERVER['REDIRECT_HTTP_AUTHORIZATION']) && !isset($headers['Authorization'])) {
+        $headers['Authorization'] = $_SERVER['REDIRECT_HTTP_AUTHORIZATION'];
+    }
+
+    return $headers;
+}
+
 /**
  * Extract and verify Bearer token from Authorization header
  * Returns payload on success, exits with 401 on failure
  */
 function require_token() {
-    $headers = getallheaders();
+    $headers = request_headers();
     
     // Try different header formats
     $auth_header = null;
@@ -57,7 +77,7 @@ function require_admin() {
  * Optional authentication - return payload if token present, null if not
  */
 function get_optional_current_user() {
-    $headers = getallheaders();
+    $headers = request_headers();
     
     $auth_header = null;
     foreach ($headers as $key => $value) {

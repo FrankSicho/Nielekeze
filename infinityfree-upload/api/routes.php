@@ -280,12 +280,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && preg_match('/^\/api\/v1\/routes\/?$
     }
     
     try {
-        // Validate locations exist
-        $check_query = "SELECT id FROM locations WHERE id IN (:origin_id, :destination_id) AND is_active = 1";
+        // Validate both route endpoints are active locations.
+        $check_query = "SELECT COUNT(*) FROM locations WHERE (id = :origin_id OR id = :destination_id) AND is_active = 1";
         $check_stmt = $conn->prepare($check_query);
         $check_stmt->execute([':origin_id' => $origin_id, ':destination_id' => $destination_id]);
         
-        if ($check_stmt->rowCount() < 2) {
+        if ((int)$check_stmt->fetchColumn() < 2) {
             error_response('One or more locations not found', 404);
         }
         
@@ -359,8 +359,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && preg_match('/^\/api\/v1\/routes\/?$
         $route = build_route_response($conn, $route_row);
         success_response($route, 201);
         
-    } catch (Exception $e) {
-        $conn->rollBack();
+    } catch (Throwable $e) {
+        if ($conn->inTransaction()) {
+            $conn->rollBack();
+        }
         error_log("Create route error: " . $e->getMessage());
         error_response('Failed to create route', 500);
     }
@@ -459,8 +461,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'PUT' && preg_match('/^\/api\/v1\/routes\/(\d
         $route = build_route_response($conn, $route_row);
         success_response($route);
         
-    } catch (Exception $e) {
-        $conn->rollBack();
+    } catch (Throwable $e) {
+        if ($conn->inTransaction()) {
+            $conn->rollBack();
+        }
         error_log("Update route error: " . $e->getMessage());
         error_response('Failed to update route', 500);
     }

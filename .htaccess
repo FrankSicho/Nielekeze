@@ -2,6 +2,9 @@
     RewriteEngine On
     RewriteBase /Nielekeze/
 
+    RewriteCond %{HTTP:Authorization} .
+    RewriteRule ^ - [E=HTTP_AUTHORIZATION:%{HTTP:Authorization}]
+
     # Enforce HTTPS in production (only if not localhost)
     # Uncomment in production environment
     # RewriteCond %{HTTPS} off

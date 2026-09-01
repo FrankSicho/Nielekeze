@@ -1,4 +1,4 @@
-const CACHE_NAME = "daladala-dar-shell-v8";
+const CACHE_NAME = "daladala-dar-shell-v9";
 const APP_SHELL = [
   "./",
   "./frontend/index.html",
