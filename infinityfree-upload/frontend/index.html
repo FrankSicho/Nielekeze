@@ -1,0 +1,94 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#0b5a5b" />
+    <meta name="description" content="Daladala Dar route finder." />
+
+    <link rel="manifest" href="/frontend/manifest.json" />
+    <link rel="icon" href="/frontend/assets/icon.svg" type="image/svg+xml" />
+
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="">
+    <link rel="stylesheet" href="/frontend/css/styles.css">
+    <title>Daladala Dar</title>
+</head>
+
+<body>
+    <div class="page">
+        <header class="topbar">
+            <div class="brand">
+                <div>
+                    <h1>Dala Dala Route Transport Network</h1>
+                    <p class="subtitle">Compare daladala routes, fares and connections to find the most practical way to get there.</p>
+                </div>
+                <div class="backend-status" id="backend-status">
+                    <span class="status-dot" id="backend-status-dot"></span>
+                </div>
+            </div>
+        </header>
+
+        <p class="disclaimer">
+            <span aria-hidden="true">🚧</span>
+            Some route and fare information may be incomplete or inaccurate while we continue expanding our coverage.
+        </p>
+
+        <form class="search-card" aria-label="Route search">
+            <div class="field-stack">
+                <label class="field typeahead-field">
+                    <span class="field-label">From</span>
+                    <input id="from-input" type="search" placeholder="Start typing a place" autocomplete="off" aria-expanded="false" aria-controls="from-suggestions" />
+                    <input id="from-id" type="hidden" />
+                    <div id="from-suggestions" class="suggestions" role="listbox"></div>
+                </label>
+
+                <!-- <button id="swap-locations" type="button" class="swap-button" aria-label="Swap origin and destination">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M7 10l-4 4 4 4M3 14h13M17 4l4 4-4 4M21 8H8" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path>
+                    </svg>
+                </button> -->
+
+                <label class="field typeahead-field">
+                    <span class="field-label">To</span>
+                    <input id="to-input" type="search" placeholder="Start typing a place" autocomplete="off" aria-expanded="false" aria-controls="to-suggestions" />
+                    <input id="to-id" type="hidden" />
+                    <div id="to-suggestions" class="suggestions" role="listbox"></div>
+                </label>
+            </div>
+
+            <button id="find-route" type="button" class="submit-button">Find routes</button>
+            <p id="search-message" class="error" role="alert"></p>
+        </form>
+
+        <section id="results-section" class="results" aria-label="Route options" hidden>
+            <div class="results-header">
+                <span id="result-count">0 options</span>
+                <span>Sorted by fare</span>
+            </div>
+            <ul id="results" class="results-list"></ul>
+        </section>
+    </div>
+
+    <section id="detail-section" class="detail-section" aria-labelledby="detail-title" hidden>
+        <div class="detail-header">
+            <div>
+                <p class="eyebrow">Route detail</p>
+                <h2 id="detail-title" class="detail-title">How to get there</h2>
+            </div>
+            <button id="close-detail" class="quiet-button" type="button">Close</button>
+        </div>
+        <div id="detail-content"></div>
+        <div class="map-toolbar">
+            <span class="map-toolbar-label">Route map</span>
+            <button id="toggle-map-size" class="map-toggle-button" type="button" aria-label="Return map to compact size">Return to compact</button>
+        </div>
+        <div id="route-map" class="route-map is-expanded" aria-label="Map of selected route"></div>
+        <p id="map-message" class="map-message"></p>
+    </section>
+
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+    <script src="/frontend/js/app.js"></script>
+</body>
+
+</html>

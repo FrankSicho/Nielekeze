@@ -1,0 +1,155 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#0b5a5b" />
+    <title>Admin | Daladala Dar</title>
+    <link rel="stylesheet" href="/frontend/css/admin.css" />
+  </head>
+  <body>
+    <header class="admin-topbar">
+      <a class="brand" href="/admin">Daladala Dar <span>Admin</span></a>
+      <button id="logout-button" class="quiet-button" type="button" hidden>Log out</button>
+    </header>
+
+    <main class="admin-shell">
+      <div id="location-editor-modal" class="modal hidden" aria-hidden="true">
+        <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="location-editor-title">
+          <div class="modal-header">
+            <div>
+              <p class="eyebrow">Location editor</p>
+              <h3 id="location-editor-title">Edit location</h3>
+            </div>
+            <button id="close-location-editor" class="quiet-button" type="button">Close</button>
+          </div>
+
+          <form id="location-editor-form" class="stack-form">
+            <input id="location-editor-id" type="hidden" />
+            <label>Name<input id="location-editor-name" required maxlength="150" /></label>
+            <label>Slug<input id="location-editor-slug" maxlength="150" /></label>
+            <div class="two-fields">
+              <label>Latitude<input id="location-editor-latitude" type="number" step="any" min="-90" max="90" /></label>
+              <label>Longitude<input id="location-editor-longitude" type="number" step="any" min="-180" max="180" /></label>
+            </div>
+            <label>Aliases <span class="hint">comma separated</span><input id="location-editor-aliases" /></label>
+            <label>Type<input id="location-editor-type" maxlength="50" /></label>
+            <label>Description<textarea id="location-editor-description" rows="3"></textarea></label>
+            <label><input id="location-editor-active" type="checkbox" /> Active</label>
+            <div class="modal-actions">
+              <button class="quiet-button" id="cancel-location-editor" type="button">Cancel</button>
+              <button class="primary-button" type="submit">Save changes</button>
+            </div>
+          </form>
+        </div>
+      </div>
+
+      <div id="route-editor-modal" class="modal hidden" aria-hidden="true">
+        <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="route-editor-title">
+          <div class="modal-header">
+            <div>
+              <p class="eyebrow">Route editor</p>
+              <h3 id="route-editor-title">Edit route</h3>
+            </div>
+            <button id="close-route-editor" class="quiet-button" type="button">Close</button>
+          </div>
+
+          <form id="route-editor-form" class="stack-form">
+            <input id="route-editor-id" type="hidden" />
+            <label>Route name<input id="route-editor-name" required maxlength="200" /></label>
+            <div class="two-fields">
+              <label>Origin<select id="route-editor-origin" required></select></label>
+              <label>Destination<select id="route-editor-destination" required></select></label>
+            </div>
+            <label>Stops <span class="hint">IDs in order, comma separated</span><input id="route-editor-stops" required placeholder="1, 4, 7" /></label>
+            <label>Via <span class="hint">optional, for example: Masaki, Kijitonyama</span><input id="route-editor-via" maxlength="255" placeholder="Masaki, Kijitonyama" /></label>
+            <div class="two-fields">
+              <label>Estimated fare (TZS)<input id="route-editor-fare" type="number" min="0" step="1" /></label>
+              <label>Status<select id="route-editor-status"><option value="ACTIVE">ACTIVE</option><option value="INACTIVE">INACTIVE</option></select></label>
+            </div>
+            <div class="two-fields">
+              <label>Verification<select id="route-editor-verification"><option>UNVERIFIED</option><option>COMMUNITY_REPORTED</option><option>COMMUNITY_CONFIRMED</option><option>ADMIN_VERIFIED</option></select></label>
+              <label>Source<input id="route-editor-source" maxlength="255" /></label>
+            </div>
+
+            <div class="modal-actions">
+              <button id="delete-route-button" class="danger-button" type="button">Delete route</button>
+              <div class="modal-action-right">
+                <button class="quiet-button" id="cancel-route-editor" type="button">Cancel</button>
+                <button class="primary-button" type="submit">Save changes</button>
+              </div>
+            </div>
+          </form>
+        </div>
+      </div>
+
+      <section id="login-panel" class="panel login-panel" aria-labelledby="login-title">
+        <p class="eyebrow">Restricted workspace</p>
+        <h1 id="login-title">Admin sign in</h1>
+        <p class="muted">Use an administrator account to manage test data and review submissions.</p>
+        <form id="login-form" class="stack-form">
+          <label>Email<input id="login-email" type="email" required autocomplete="username" /></label>
+          <label>Password<input id="login-password" type="password" required autocomplete="current-password" /></label>
+          <button class="primary-button" type="submit">Sign in</button>
+        </form>
+        <p id="login-message" class="message" role="alert"></p>
+      </section>
+
+      <section id="dashboard" hidden>
+        <div class="dashboard-heading">
+          <div>
+            <p class="eyebrow">Operations</p>
+            <h1>Admin workspace</h1>
+            <p id="admin-identity" class="muted"></p>
+          </div>
+          <span class="status-pill">Admin access</span>
+        </div>
+
+        <div class="dashboard-grid">
+          <section class="panel" aria-labelledby="location-title">
+            <div class="panel-heading"><div><p class="eyebrow">Database</p><h2 id="location-title">Add location</h2></div></div>
+            <form id="location-form" class="stack-form">
+              <label>Name<input id="location-name" required maxlength="150" placeholder="Mbezi" /></label>
+              <label>Slug<input id="location-slug" maxlength="150" placeholder="mbezi" /></label>
+              <div class="two-fields"><label>Latitude<input id="location-latitude" type="number" step="any" min="-90" max="90" /></label><label>Longitude<input id="location-longitude" type="number" step="any" min="-180" max="180" /></label></div>
+              <label>Aliases <span class="hint">comma separated</span><input id="location-aliases" placeholder="Mbezi Kituo, Mbezi mwisho" /></label>
+              <label>Type<input id="location-type" maxlength="50" placeholder="BUS_STOP" /></label>
+              <button class="primary-button" type="submit">Create location</button>
+            </form>
+            <p id="location-message" class="message" role="status"></p>
+          </section>
+
+          <section class="panel" aria-labelledby="route-title">
+            <div class="panel-heading"><div><p class="eyebrow">Transport data</p><h2 id="route-title">Add route</h2></div></div>
+            <form id="route-form" class="stack-form">
+              <label>Route name<input id="route-name" required maxlength="200" placeholder="Mbezi to Masaki" /></label>
+              <div class="two-fields"><label>Origin<span class="location-picker"><input id="route-origin" required autocomplete="off" placeholder="Search locations" role="combobox" aria-autocomplete="list" aria-controls="route-origin-suggestions" aria-expanded="false" /><span id="route-origin-suggestions" class="location-suggestions" role="listbox" hidden></span></span></label><label>Destination<span class="location-picker"><input id="route-destination" required autocomplete="off" placeholder="Search locations" role="combobox" aria-autocomplete="list" aria-controls="route-destination-suggestions" aria-expanded="false" /><span id="route-destination-suggestions" class="location-suggestions" role="listbox" hidden></span></span></label></div>
+              <label>Stops <span class="hint">IDs in order, comma separated</span><input id="route-stops" required placeholder="1, 4, 7" /></label>
+              <label>Via <span class="hint">optional, for example: Masaki, Kijitonyama</span><input id="route-via" maxlength="255" placeholder="Masaki, Kijitonyama" /></label>
+              <div class="two-fields"><label>Estimated fare (TZS)<input id="route-fare" type="number" min="0" step="1" /></label><label>Verification<select id="route-verification"><option>UNVERIFIED</option><option>COMMUNITY_REPORTED</option><option>COMMUNITY_CONFIRMED</option><option>ADMIN_VERIFIED</option></select></label></div>
+              <label>Source<input id="route-source" required maxlength="255" value="ADMIN_ENTERED" /></label>
+              <button class="primary-button" type="submit">Create route</button>
+            </form>
+            <p id="route-message" class="message" role="status"></p>
+          </section>
+        </div>
+
+        <section class="panel queue-panel" aria-labelledby="queue-title">
+          <div class="panel-heading"><div><p class="eyebrow">Review</p><h2 id="queue-title">Contribution queue</h2></div><button id="refresh-button" class="quiet-button" type="button">Refresh</button></div>
+          <div id="queue" class="queue" aria-live="polite"></div>
+        </section>
+
+        <section class="panel" aria-labelledby="locations-title">
+          <div class="panel-heading"><div><p class="eyebrow">Current data</p><h2 id="locations-title">Locations</h2></div></div>
+          <div id="location-list" class="location-list"></div>
+        </section>
+
+        <section class="panel" aria-labelledby="routes-title">
+          <div class="panel-heading"><div><p class="eyebrow">Current data</p><h2 id="routes-title">Routes</h2></div></div>
+          <div id="route-list" class="route-list"></div>
+        </section>
+      </section>
+    </main>
+    <script src="/frontend/js/admin.js?v=3"></script>
+  </body>
+</html>

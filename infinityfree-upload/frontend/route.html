@@ -1,0 +1,149 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Route detail</title>
+    <link rel="stylesheet" href="/frontend/css/styles.css" />
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  </head>
+  <body>
+    <header class="topbar">
+      <a class="brand" href="/" aria-label="Back to search">
+        <span class="brand-mark" aria-hidden="true">DD</span>
+        <span>Daladala Dar</span>
+      </a>
+    </header>
+    <main class="shell">
+      <section class="detail-section">
+        <div id="route-detail-root">
+          <div class="detail-summary" id="detail-summary"></div>
+          <div id="detail-segments" class="segments"></div>
+          <div class="map-toolbar">
+            <span class="map-toolbar-label">Route map</span>
+            <button id="toggle-map-size" class="map-toggle-button" type="button" aria-label="Return map to compact size">Return to compact</button>
+          </div>
+          <div id="route-map" class="route-map is-expanded"></div>
+          <p id="map-message" class="map-message"></p>
+        </div>
+      </section>
+    </main>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script>
+      const qs = new URLSearchParams(location.search);
+      const id = qs.get('id');
+      const detailSummary = document.getElementById('detail-summary');
+      const detailSegments = document.getElementById('detail-segments');
+      const routeMap = document.getElementById('route-map');
+      const mapMessage = document.getElementById('map-message');
+      const toggleMapButton = document.getElementById('toggle-map-size');
+      let activeMap;
+      let mapExpanded = true;
+
+      const syncMapSizeToggle = () => {
+        if (!routeMap || !toggleMapButton) return;
+        routeMap.classList.toggle('is-expanded', mapExpanded);
+        routeMap.classList.toggle('is-compact', !mapExpanded);
+        toggleMapButton.textContent = mapExpanded ? 'Return to compact' : 'Maximize map';
+        toggleMapButton.setAttribute('aria-label', mapExpanded ? 'Return map to compact size' : 'Maximize map');
+        if (activeMap) {
+          requestAnimationFrame(() => activeMap.invalidateSize());
+        }
+      };
+
+      const setMapExpanded = (expanded) => {
+        mapExpanded = expanded;
+        syncMapSizeToggle();
+      };
+
+      if (toggleMapButton) {
+        toggleMapButton.addEventListener('click', () => {
+          setMapExpanded(!mapExpanded);
+        });
+      }
+
+      const escapeHtml = (value) => String(value)
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#039;");
+
+      const renderStopFlow = (stops) => {
+        if (!stops?.length) return "";
+        return stops.map((stop, idx) => `<div class="route-stop-pill"><span class="route-stop-name">${escapeHtml(stop.name)}</span></div>`).join('');
+      };
+
+      const render = (route) => {
+        detailSummary.innerHTML = `<strong>${route.estimated_fare === null ? 'Fare unavailable' : `~TSh ${route.estimated_fare.toLocaleString()}`}</strong><span>${route.legs} legs</span><span>${escapeHtml(route.verification_status)}</span>`;
+        detailSegments.innerHTML = route.segments.map((segment, index) => `
+          <div class="segment"><span class="segment-number">${index+1}</span><div class="segment-body"><p class="segment-label">Take</p><strong>${escapeHtml(segment.route_name)}</strong><div class="segment-stop-flow">${renderStopFlow(segment.stops)}</div><p class="segment-fare">${segment.estimated_fare === null ? 'Fare unavailable' : `${segment.estimated_fare.toLocaleString()} TZS`}</p></div></div>
+        `).join('');
+        renderRouteMap(route);
+      };
+
+      const renderRouteMap = (route) => {
+        if (activeMap) { activeMap.remove(); activeMap = null; }
+        routeMap.innerHTML = '';
+        const coordinates = route.stops
+          .filter((stop) => Number.isFinite(stop.latitude) && Number.isFinite(stop.longitude))
+          .map((stop) => [stop.latitude, stop.longitude, stop.name]);
+        if (coordinates.length !== route.stops.length) {
+          routeMap.hidden = true;
+          mapMessage.textContent = 'Map unavailable: this route has no verified location coordinates.';
+          return;
+        }
+        if (!window.L) {
+          routeMap.hidden = true;
+          mapMessage.textContent = 'Map unavailable while the map service is loading.';
+          return;
+        }
+        routeMap.hidden = false;
+        setMapExpanded(mapExpanded);
+        mapMessage.textContent = 'Map data © OpenStreetMap contributors.';
+        activeMap = window.L.map(routeMap, { scrollWheelZoom: false });
+        requestAnimationFrame(() => activeMap.invalidateSize());
+        window.L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '&copy; OpenStreetMap contributors', maxZoom: 19 }).addTo(activeMap);
+        const points = coordinates.map(([latitude, longitude]) => [latitude, longitude]);
+        const createMarkerIcon = (color, size) => {
+          const markerSvg = `
+            <svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size * 1.5}" viewBox="0 0 24 32" aria-hidden="true">
+              <path d="M12 0C5.4 0 0 5.4 0 12c0 9 12 20 12 20s12-11 12-20C24 5.4 18.6 0 12 0z" fill="${color}"/>
+              <circle cx="12" cy="12" r="4.5" fill="rgba(255,255,255,0.9)"/>
+            </svg>
+          `;
+
+          return window.L.icon({
+            iconUrl: `data:image/svg+xml;charset=UTF-8,${encodeURIComponent(markerSvg)}`,
+            shadowUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
+            iconSize: [size, size * 1.5],
+            iconAnchor: [size / 2, size * 1.5],
+            shadowSize: [41, 41],
+            shadowAnchor: [12, 41],
+            popupAnchor: [0, -(size * 1.5) / 2]
+          });
+        };
+        window.L.polyline(points, { color: '#0b5a5b', weight: 5 }).addTo(activeMap);
+        coordinates.forEach(([latitude, longitude, name], index) => {
+          const isOrigin = index === 0;
+          const isDestination = index === coordinates.length - 1;
+          const markerColor = isOrigin ? '#2e9f5b' : isDestination ? '#d9534f' : '#3baa62';
+          const markerSize = isOrigin || isDestination ? 22 : 12;
+
+          window.L.marker([latitude, longitude], { icon: createMarkerIcon(markerColor, markerSize) }).addTo(activeMap)
+            .bindPopup(`${index + 1}. ${escapeHtml(name)}`);
+        });
+        activeMap.fitBounds(points, { padding: [24, 24] });
+      };
+
+      if (!id) {
+        detailSummary.textContent = 'No route selected.';
+      } else {
+        fetch(`/api/v1/routes/${encodeURIComponent(id)}`)
+          .then((r) => { if (!r.ok) throw new Error('Route not found'); return r.json(); })
+          .then((data) => render(data))
+          .catch((err) => { detailSummary.textContent = 'Route could not be loaded.'; console.error(err); });
+      }
+    </script>
+  </body>
+</html>

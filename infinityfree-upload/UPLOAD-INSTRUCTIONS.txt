@@ -1,0 +1,31 @@
+INFINITYFREE UPLOAD CHECKLIST
+
+1. In the InfinityFree Control Panel, create a MySQL database and import this
+   application's database schema using phpMyAdmin.
+
+2. Copy .env.example to .env in this folder and edit .env with the exact
+   database host, database name, username, and password supplied by InfinityFree.
+   Set ALLOWED_ORIGINS to the current HTTPS domain:
+   ALLOWED_ORIGINS=https://nielekeze.free.nf
+   When the custom domain is ready, replace it with the new HTTPS domain. During
+   a temporary migration, list both values separated by a comma.
+
+3. Generate different random values for SECRET_KEY and ADMIN_SETUP_SECRET.
+   Do not upload your local .env file and do not commit .env to Git.
+
+4. Delete InfinityFree's default index2.html from the hosting account.
+
+5. Upload the CONTENTS of this folder directly into the hosting account's
+   htdocs folder. Do not upload this infinityfree-upload folder itself.
+
+6. Enable an SSL certificate in InfinityFree before using admin accounts.
+   The included .htaccess redirects HTTP to HTTPS.
+
+7. Test these URLs after upload:
+   https://nielekeze.free.nf/api/v1/health
+   https://nielekeze.free.nf/
+   https://nielekeze.free.nf/setup-admin
+   https://nielekeze.free.nf/admin
+
+8. Create the first administrator at /setup-admin with the production
+   ADMIN_SETUP_SECRET, then sign in at /admin.

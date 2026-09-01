@@ -1,0 +1,19 @@
+{
+  "name": "Daladala Dar",
+  "short_name": "Daladala Dar",
+  "description": "A community-powered Daladala route planner for Dar es Salaam.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#eef3ee",
+  "theme_color": "#0b5a5b",
+  "lang": "en-TZ",
+  "icons": [
+    {
+      "src": "/assets/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
